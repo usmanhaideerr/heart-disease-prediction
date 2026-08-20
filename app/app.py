@@ -106,16 +106,35 @@ def get_top_risk_factors(pipeline, input_df, top_n=3):
         contrib_df["AbsContribution"] = contrib_df["Contribution"].abs()
         contrib_df = contrib_df.sort_values(by="AbsContribution", ascending=False).head(top_n)
 
+        FEATURE_LABELS = {
+            "Sex_M": "Male",
+            "Sex_F": "Female",
+            "ChestPainType_ASY": "Asymptomatic Chest Pain",
+            "ChestPainType_ATA": "Atypical Angina",
+            "ChestPainType_NAP": "Non-Anginal Pain",
+            "ChestPainType_TA": "Typical Angina",
+            "RestingECG_Normal": "Normal Resting ECG",
+            "RestingECG_ST": "ST-T Wave Abnormality (ECG)",
+            "RestingECG_LVH": "Left Ventricular Hypertrophy (ECG)",
+            "ExerciseAngina_Y": "Exercise-Induced Angina",
+            "ExerciseAngina_N": "No Exercise-Induced Angina",
+            "ST_Slope_Up": "Upsloping ST Segment",
+            "ST_Slope_Flat": "Flat ST Segment",
+            "ST_Slope_Down": "Downsloping ST Segment",
+            "Age": "Age",
+            "RestingBP": "Resting Blood Pressure",
+            "Cholesterol": "Cholesterol Level",
+            "FastingBS": "Fasting Blood Sugar",
+            "MaxHR": "Maximum Heart Rate",
+            "Oldpeak": "ST Depression (Oldpeak)",
+            "Cholesterol_Missing": "Cholesterol Not Provided"
+        }
 
         def clean_feature_name(name):
-            name = name.replace("cat__", "").replace("num__", "").replace("pass__", "")
-            name = name.replace("_", " ")
-            return name
+            raw_name = name.replace("cat__", "").replace("num__", "").replace("pass__", "")
+            return FEATURE_LABELS.get(raw_name, raw_name.replace("_", " "))
 
         contrib_df["Feature"] = contrib_df["Feature"].apply(clean_feature_name)
-
-        return contrib_df[["Feature", "Contribution"]]
-
 
 
     except Exception:
