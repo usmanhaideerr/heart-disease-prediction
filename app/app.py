@@ -5,6 +5,7 @@ import joblib
 import matplotlib.pyplot as plt
 from fpdf import FPDF
 from datetime import datetime
+import os
 
 st.set_page_config(page_title="Heart Disease Risk Prediction", page_icon="❤️", layout="wide")
 
@@ -18,12 +19,15 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "..", "models", "heart_disease_pipeline.pkl")
+
 try:
-    pipeline = joblib.load("../models/heart_disease_pipeline.pkl")
+    pipeline = joblib.load(MODEL_PATH)
 except FileNotFoundError:
     st.error("Model file not found. Please ensure `heart_disease_pipeline.pkl` exists in the `models/` folder.")
     st.stop()
-
 
 st.markdown('<p class="main-title">❤️ Heart Disease Risk Prediction</p>', unsafe_allow_html=True)
 st.markdown('<p class="subtitle">A machine learning model trained on 918 patient records to estimate heart disease risk.</p>', unsafe_allow_html=True)
