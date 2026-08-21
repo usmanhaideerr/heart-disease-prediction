@@ -45,7 +45,7 @@ st.divider()
 
 
 st.sidebar.header("🩺 Patient Information")
-
+patient_name = st.sidebar.text_input("Patient Name (optional)", placeholder="e.g., Ali Khan")
 age = st.sidebar.slider("Age", 18, 100, 40)
 sex = st.sidebar.selectbox("Sex", ["M", "F"])
 chest_pain = st.sidebar.selectbox(
@@ -142,7 +142,7 @@ def get_top_risk_factors(pipeline, input_df, top_n=3):
     except Exception:
         return None
 
-def generate_pdf(input_dict, result_text, confidence, timestamp):
+def generate_pdf(input_dict, result_text, confidence, timestamp, patient_name=""):
     pdf = FPDF()
     pdf.add_page()
 
@@ -153,6 +153,10 @@ def generate_pdf(input_dict, result_text, confidence, timestamp):
     pdf.set_font("Helvetica", "", 10)
     pdf.set_text_color(100, 100, 100)
     pdf.cell(0, 8, f"Generated on: {timestamp}", ln=True, align="C")
+    if patient_name.strip():
+        pdf.set_font("Helvetica", "B", 11)
+        pdf.set_text_color(0, 0, 0)
+        pdf.cell(0, 8, f"Patient: {patient_name.strip()}", ln=True, align="C")
     pdf.ln(6)
 
     pdf.set_draw_color(200, 200, 200)
@@ -224,7 +228,11 @@ if predict_clicked:
     col1, col2 = st.columns([1.2, 1])
 
     with col1:
-        st.subheader("Result")
+        
+        if patient_name.strip():
+            st.subheader(f"Result for {patient_name.strip()}")
+        else:
+            st.subheader("Result")
         if prediction == 1:
              st.error(f"⚠️ **{result_text}**")
         else:
@@ -257,19 +265,21 @@ if predict_clicked:
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     download_df = input_df.copy()
+    download_df.insert(0, "Patient Name", patient_name.strip() if patient_name.strip() else "Not Provided")
     download_df["Cholesterol"] = "Not provided" if cholesterol_unknown else cholesterol
     download_df["Prediction"] = result_text
     download_df["Confidence (%)"] = round(confidence, 2)
     download_df["Generated On"] = timestamp
     download_df["Created By"] = "Usman Haider (Data Science Student Project)"
     csv_data = download_df.to_csv(index=False).encode("utf-8")
-    pdf_data = generate_pdf(input_data, result_text, confidence, timestamp)
+    pdf_data = generate_pdf(input_data, result_text, confidence, timestamp, patient_name)
 
     dcol1, dcol2 = st.columns(2)
     with dcol1:
         st.download_button("📊 Download as CSV", data=csv_data, file_name="heart_disease_result.csv", mime="text/csv", use_container_width=True)
     with dcol2:
-        st.download_button("📄 Download as PDF", data=pdf_data, file_name="heart_disease_report.pdf", mime="application/pdf", use_container_width=True)
+        pdf_filename = f"heart_report_{patient_name.strip().replace(' ', '_')}.pdf" if patient_name.strip() else "heart_disease_report.pdf"
+        st.download_button("📄 Download as PDF", data=pdf_data, file_name=pdf_filename, mime="application/pdf", use_container_width=True)
 
 else:
     st.info("👈 Fill in the patient details in the sidebar and click **Predict Risk** to see results.")
