@@ -88,7 +88,8 @@ def get_top_risk_factors(pipeline, input_df, top_n=3):
         preprocessor = pipeline.named_steps["preprocessor"]
 
         if not hasattr(classifier, "coef_"):
-            return None  # only works for linear models like Logistic Regression
+            st.error(f"DEBUG: classifier type is {type(classifier).__name__}, no coef_ attribute found")
+            return None
 
         feature_names = preprocessor.get_feature_names_out()
         transformed_input = preprocessor.transform(input_df)
@@ -136,6 +137,7 @@ def get_top_risk_factors(pipeline, input_df, top_n=3):
 
         contrib_df["Feature"] = contrib_df["Feature"].apply(clean_feature_name)
 
+        return contrib_df[["Feature", "Contribution"]]
 
     except Exception:
         return None
